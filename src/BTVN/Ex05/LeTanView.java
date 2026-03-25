@@ -1,3 +1,22 @@
+//1. Phân tích Rủi ro & Bẫy lỗi (Edge Cases)
+//Để hệ thống không bị "sập" hoặc sai lệch dữ liệu, cần xử lý 3 kịch bản chính:
+//Sai kiểu dữ liệu (Data Type Mismatch): Nhân viên nhập chữ "Năm trăm" vào ô tiền hoặc nhập tuổi là "2x". Nếu không dùng try-catch bọc lấy Scanner.nextLine() và Double.parseDouble(), chương trình sẽ văng ngoại lệ và tắt ngóm ngay lập tức.
+//Tranh chấp tài nguyên (Race Condition): Hai nhân viên cùng thấy giường G01 trống và cùng nhấn xác nhận cho 2 bệnh nhân khác nhau. Nếu không kiểm tra trạng thái giường ngay trong Transaction, hệ thống sẽ xếp 2 người vào 1 giường.
+//Lỗi kết nối giữa chừng (Connection Loss): Sau khi INSERT bệnh nhân thành công nhưng mạng lag khiến việc UPDATE trạng thái giường thất bại. Nếu không có Rollback, bệnh nhân sẽ mất tiền tạm ứng nhưng trên hệ thống vẫn không có giường.
+//2. Thiết kế Kiến trúc & Cấu trúc Database
+//Sơ đồ luồng dữ liệu (Flowchart) cho chức năng Tiếp nhận
+//Nhập liệu: Lấy thông tin BN + Mã giường + Tiền.
+//Mở Giao dịch: Kết nối DB -> setAutoCommit(false).
+//Bước 1: Thêm mới BN vào bảng Patients.
+//Bước 2: Cập nhật trạng thái giường trong bảng Beds (Chỉ update nếu status = 'Trống').
+//Bước 3: Ghi nhận phiếu thu vào bảng Financials.
+//Kết thúc: Nếu tất cả OK -> Commit. Nếu có bất kỳ lỗi nào -> Rollback.
+//Cấu trúc các bảng Database
+//Patients: id (PK), name, age, bed_id (FK).
+//Beds: id (PK), status (0: Trống, 1: Có người).
+//Financials: id (PK), patient_id (FK), amount, created_at.
+
+
 package BTVN.Ex05;
 
 import java.util.Scanner;
