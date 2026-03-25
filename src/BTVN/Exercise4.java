@@ -1,3 +1,29 @@
+//1. Phân tích & Đề xuất Giải pháp
+//Dữ liệu đầu vào (Input) & Đầu ra (Output)
+//Input: ngayHienTai (Date) hoặc maKhoa (int).
+//Output: List<BenhNhanDTO> (Mỗi DTO chứa thông tin bệnh nhân và List<DichVu>).
+//Đề xuất 2 giải pháp JDBC
+//Giải pháp 1 (N+1 Query - Sai lầm cũ): * Query 1: Lấy danh sách 500 bệnh nhân.
+//Vòng lặp (500 lần): Với mỗi bệnh nhân, bắn thêm 1 Query vào DB để lấy danh sách dịch vụ.
+//Tổng cộng: 501 Queries.
+//Giải pháp 2 (Join & Map - Tối ưu):
+//Sử dụng duy nhất 1 Query dùng LEFT JOIN để lấy tất cả bệnh nhân và dịch vụ đi kèm trong một lần truy vấn duy nhất.
+//Dùng Map<Integer, BenhNhanDTO> trong Java để gộp dữ liệu trùng lặp.
+//2. So sánh & Lựa chọn
+//Tiêu chí          Giải pháp 1 (N+1)                           Giải pháp 2 (JOIN & MAP)
+//Số lượng          Query,Rất lớn (N+1)                         Duy nhất 1
+//Network I/O       Quá tải do đóng/mở connection liên tục      "Cực thấp, tối ưu đường truyền"
+//Tốc độ xử lý      10 - 15 giây (Rất chậm)                     < 1 giây (Rất nhanh)
+//Độ phức tạp       Đơn giản                                    Phức tạp hơn (cần xử lý Map)
+//Chốt lựa chọn: Giải pháp 2 là tối ưu nhất vì triệt tiêu độ trễ mạng và đáp ứng yêu cầu < 1s của Giám đốc bệnh viện.
+
+//3. Thiết kế & Triển khai
+//Thiết kế câu lệnh SQL & Logic xử lý
+//SQL: SELECT bn.*, dv.* FROM BenhNhan bn LEFT JOIN DichVu dv ON bn.id = dv.bn_id.
+//Lưu ý: Dùng LEFT JOIN thay vì INNER JOIN để tránh Bẫy 2 (mất bệnh nhân chưa có dịch vụ).
+//Java Logic: * Tạo một Map<Integer, BenhNhanDTO>.
+//Duyệt qua ResultSet. Nếu maBN chưa có trong Map -> Tạo mới DTO.
+//Nếu dòng hiện tại có thông tin dịch vụ (không null) -> Thêm dịch vụ vào danh sách của DTO tương ứng.
 package BTVN;
 
 import java.sql.Connection;

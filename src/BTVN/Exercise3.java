@@ -1,3 +1,17 @@
+//1. Phân tích Bài toán (I/O)
+//Việc xác định rõ dữ liệu giúp hệ thống kiểm soát chặt chẽ các kịch bản lỗi ngay từ đầu vào.
+//Dữ liệu đầu vào (Input):
+//maBenhNhan (int): ID duy nhất của bệnh nhân. Dùng để định vị ví tiền, giường bệnh và hồ sơ.
+//tienVienPhi (double): Số tiền cần thanh toán. Phải là số dương để tránh lỗi logic nghiệp vụ.
+//Kết quả trả về (Output):
+//Thành công: Thông báo "Xuất viện thành công", Database cập nhật đồng bộ 3 bảng (Tiền trừ, Giường trống, Trạng thái đã xuất viện).
+//Thất bại: Ném ra Exception kèm thông điệp cụ thể (Ví dụ: "Số dư không đủ" hoặc "Mã bệnh nhân không tồn tại"). Mọi thay đổi trung gian đều bị hủy bỏ (Rollback).
+//2. Đề xuất Giải pháp kỹ thuật
+//Để giải quyết nguyên lý All-or-Nothing, chúng ta sử dụng cơ chế kiểm soát giao dịch thủ công của JDBC:
+//Cơ chế chính: Sử dụng connection.setAutoCommit(false). Dữ liệu sẽ chỉ được ghi xuống đĩa khi lệnh commit() được gọi ở cuối luồng xử lý thành công.
+//Giải quyết Bẫy 1 (Thiếu tiền): Thực hiện một truy vấn SELECT số dư trước khi UPDATE. Nếu số dư thấp hơn viện phí, dùng lệnh throw new Exception() để chủ động ngắt luồng và nhảy vào khối catch để Rollback.
+//Giải quyết Bẫy 2 (Dữ liệu ảo): Kiểm tra giá trị trả về của executeUpdate(). Nếu kết quả bằng 0, nghĩa là WHERE maBenhNhan không khớp với dòng nào. Lúc này, ta cũng chủ động ném ngoại lệ để kích hoạt Rollback, tránh việc xác nhận một giao dịch "rỗng".
+
 package BTVN;
 
 import java.sql.*;
